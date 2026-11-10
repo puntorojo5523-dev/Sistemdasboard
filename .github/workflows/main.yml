@@ -1,0 +1,48 @@
+
+name: Build SISTEMDASHBOARD APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Compilar APK Android
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar proyecto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Configurar Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Verificar archivos del proyecto
+        run: |
+          test -f settings.gradle.kts
+          test -f android/build.gradle.kts
+          test -f android/src/main/AndroidManifest.xml
+
+      - name: Compilar APK
+        run: gradle --no-daemon :android:assembleDebug
+
+      - name: Guardar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SISTEMDASHBOARD-APK
+          path: android/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
+          retention-days: 14
